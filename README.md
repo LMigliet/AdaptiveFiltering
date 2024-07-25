@@ -29,3 +29,6 @@ if __name__ == "__main__":
     folder_path = "path/to/your/raw_data"
     metadata_path = "path/to/your/metadata.csv"
     inlier_df_ac, outlier_df_ac, NMETA, inlier_params, outlier_params = main(folder_path, metadata_path)
+```
+
+This project is licensed under the MIT License - see the LICENSE file for details.
