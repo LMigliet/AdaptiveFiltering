@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,7 +38,7 @@ def load_data(folder_path, metadata_path):
 
 def preprocess_data(
     df_raw,
-    NMETA,
+    nmeta,
     N_CYCLE_INIT,
     CT_THRESH,
     FLUO_THRESH,
@@ -70,15 +71,15 @@ def preprocess_data(
         Preprocessed DataFrame.
     """
     df_bs = preprocess.remove_baseline(
-        df_raw, NMETA, N_CYCLE_INIT, CT_THRESH, FLUO_THRESH
+        df_raw, nmeta, N_CYCLE_INIT, CT_THRESH, FLUO_THRESH
     )
     df_bs_lc = preprocess.remove_late_curves(
-        df_bs, NMETA, CT_THRESH, FLUO_UPPER_THRESH, FLUO_LOWER_THRESH
+        df_bs, nmeta, CT_THRESH, FLUO_UPPER_THRESH, FLUO_LOWER_THRESH
     )
     return df_bs_lc
 
 
-def fit_curves_parallel(df_bs_lc, NMETA, initial_params, param_bounds, n_jobs):
+def fit_curves_parallel(df_bs_lc, nmeta, initial_params, param_bounds, n_jobs):
     """
     Fit curves to the data in parallel.
 
@@ -108,7 +109,7 @@ def fit_curves_parallel(df_bs_lc, NMETA, initial_params, param_bounds, n_jobs):
         for df_ in split_df:
             results_obj.append(
                 pool.apply_async(
-                    fitter.fit_curves, (df_, NMETA, initial_params, param_bounds)
+                    fitter.fit_curves, (df_, nmeta, initial_params, param_bounds)
                 )
             )
         pool.close()
@@ -118,7 +119,7 @@ def fit_curves_parallel(df_bs_lc, NMETA, initial_params, param_bounds, n_jobs):
     return pd.concat(sample_list)
 
 
-def normalize_parameters(param_df, param_set, NMETA):
+def normalize_parameters(param_df, param_set):
     """
     Normalize the parameters for each panel.
 
@@ -128,8 +129,6 @@ def normalize_parameters(param_df, param_set, NMETA):
         DataFrame containing parameters.
     param_set : list
         List of parameter names to be normalized.
-    NMETA : int
-        Number of metadata columns.
 
     Returns
     -------
@@ -207,7 +206,7 @@ def detect_outliers(df_bs_lc, param_df_norm, param_set, outlierpc_series):
     return inlier_index, outlier_index
 
 
-def main(folder_path, metadata_path):
+def main(folder_path, metadata_path, output_folder, nmeta=5):
     """
     Main pipeline for processing dPCR data.
 
@@ -226,7 +225,6 @@ def main(folder_path, metadata_path):
     ### EXTRACT DATA from TXT FILES and META
     df_raw = load_data(folder_path, metadata_path)
 
-    NMETA = 5
     N_CYCLE_INIT = 5
     CT_THRESH = 35
     FLUO_THRESH = 0.1
@@ -236,7 +234,7 @@ def main(folder_path, metadata_path):
     ### PREPROCESS DATA
     df_bs_lc = preprocess_data(
         df_raw,
-        NMETA,
+        nmeta,
         N_CYCLE_INIT,
         CT_THRESH,
         FLUO_THRESH,
@@ -252,7 +250,7 @@ def main(folder_path, metadata_path):
     print("\nINITIAL FIT")
     sample_df_param = fit_curves_parallel(
         df_bs_lc.sample(frac=0.01, random_state=9),
-        NMETA,
+        nmeta,
         initial_params,
         param_bounds,
         n_jobs,
@@ -260,12 +258,12 @@ def main(folder_path, metadata_path):
     print("\nWHOLE DATASET FIT")
     param_set = ["Fm", "Fb", "Sc", "Cs", "As"]
     param_df = fit_curves_parallel(
-        df_bs_lc, NMETA, sample_df_param[param_set].median(), param_bounds, n_jobs
+        df_bs_lc, nmeta, sample_df_param[param_set].median(), param_bounds, n_jobs
     )
 
     ### ADD ENDSLOP PARAM & NORMALISE PARAMS
-    param_df["endSlope"] = features.end_slope_extract(df_bs_lc, NMETA, 5)
-    param_df_norm = normalize_parameters(param_df, param_set + ["endSlope"], NMETA)
+    param_df["endSlope"] = features.end_slope_extract(df_bs_lc, nmeta, 5)
+    param_df_norm = normalize_parameters(param_df, param_set + ["endSlope"])
 
     ### OUTLIER DETECTION
     print("\nOUTLIER DETECTION")
@@ -298,22 +296,41 @@ def main(folder_path, metadata_path):
     outlier_df_ac = outlier_df_ac.append(removed_df_ac)
     outlier_df_param_ex = outlier_df_param_ex.append(removed_df_param)
 
+    df_param_inliers = param_df_norm.loc[inlier_df_ac.index]
+    df_param_outliers = param_df_norm.loc[outlier_df_ac.index]
+
+    # Save the results
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    inlier_df_ac.to_csv(os.path.join(output_folder, "inliers_ac.csv"), index=False)
+    outlier_df_ac.to_csv(os.path.join(output_folder, "outliers_ac.csv"), index=False)
+    df_param_inliers.to_csv(
+        os.path.join(output_folder, "inliers_params.csv"), index=False
+    )
+    df_param_outliers.to_csv(
+        os.path.join(output_folder, "outliers_params.csv"), index=False
+    )
+
     return (
         inlier_df_ac,
         outlier_df_ac,
-        NMETA,
-        param_df_norm.loc[inlier_df_ac.index],
-        param_df_norm.loc[outlier_df_ac.index],
+        df_param_inliers,
+        df_param_outliers,
     )
 
 
 ###### TEST USAGE ######
 
 if __name__ == "__main__":
-    folder_path = r"data/test_data/raw_data"
-    metadata_path = r"data/test_data/metadata_test.csv"
-    df_ac_inliers, df_ac_outliers, NMETA, df_param_inliers, df_param_outliers = main(
-        folder_path, metadata_path
+
+    folder_path = r"data/test_data/raw_data"  # specify the path of your data
+    metadata_path = r"data/test_data/metadata_test.csv"  # specify the path of your metadata and adjust NMETA if needed.
+    output_folder = r"data/test_data/processed"
+    NMETA = 5
+
+    df_ac_inliers, df_ac_outliers, df_param_inliers, df_param_outliers = main(
+        folder_path, metadata_path, output_folder, nmeta=NMETA
     )
 
     # # PLOT IF YOU WANT

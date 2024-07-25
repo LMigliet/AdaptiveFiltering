@@ -19,6 +19,7 @@ It can analyse data from BioMark HD (Fluidigm, now standard biotools) real-time 
 ```
 AdaptiveFiltering/
 ├── data/                        # Folder for storing raw and processed data
+│   ├── processed/               # Folder for processed dPCR data files (csv)
 │   ├── raw_data/                # Folder for raw dPCR data files (AC.txt)
 │   └── metadata_test.csv        # Metadata file
 ├── src/                         # Source code directory
