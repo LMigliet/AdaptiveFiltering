@@ -1,6 +1,14 @@
+import logging
+import multiprocessing
+
 import numpy as np
 import pandas as pd
 import scipy.optimize as opt
+
+from src.logging_config import setup_logger
+
+# Set up logger for the fitter module
+logger = setup_logger(__name__)
 
 
 def sigmoid5_un(x, Fm, Fb, Sc, Cs, As):
@@ -100,70 +108,69 @@ def fit_curves(dataframe, n_meta, initial_params, param_bounds):
     # DataFrame to store fitted parameters
     param_df = pd.DataFrame(columns=["Fm", "Fb", "Sc", "Cs", "As", "mse"])
 
+    logger.info("Starting curve fitting for each sample")
+
     # Loop through each amplification curve
     for i in range(n_samples):
         y_data = df_copy.iloc[i, n_meta:].T.copy()
 
-        try:
-            popt, _ = opt.curve_fit(
-                sigmoid5_un,
-                x_data,
-                y_data,
-                p0=initial_params,
-                bounds=param_bounds,
-                method="trf",
-            )
-        except RuntimeError:
-            print(f"Cannot find optimal solutions for sample #{df_copy.index[i]}")
-            popt = param_bounds[1]
+    popt, _ = opt.curve_fit(
+        sigmoid5_un,
+        x_data,
+        y_data,
+        p0=initial_params,
+        bounds=param_bounds,
+        method="trf",
+    )
 
-        mse = np.mean((y_data - sigmoid5_un(x_data, *popt)) ** 2)
-        param_df.loc[i] = [popt[0], popt[1], popt[2], popt[3], popt[4], mse]
+    mse = np.mean((y_data - sigmoid5_un(x_data, *popt)) ** 2)
+    param_df.loc[i] = [popt[0], popt[1], popt[2], popt[3], popt[4], mse]
 
     param_df.index = dataframe.index
     param_df_with_meta = pd.concat([dataframe.iloc[:, :n_meta], param_df], axis=1)
 
+    logger.info("Curve fitting complete")
     return param_df_with_meta
 
 
-def fit_curves_global_optimization(dataframe, n_meta, param_bounds):
+def fit_curves_parallel(
+    df_bs_lc, nmeta, initial_params, param_bounds, n_jobs, log_level=logging.INFO
+):
     """
-    Fit amplification curves using global optimization.
+    Fit curves to the data in parallel.
 
     Parameters
     ----------
-    dataframe : pandas.DataFrame
-        DataFrame containing amplification curves with metadata.
-    n_meta : int
+    df_bs_lc : pd.DataFrame
+        Preprocessed DataFrame.
+    NMETA : int
         Number of metadata columns.
+    initial_params : tuple
+        Initial parameters for curve fitting.
     param_bounds : tuple
-        Bounds for the parameters.
+        Parameter bounds for curve fitting.
+    n_jobs : int
+        Number of parallel jobs.
+    log_level : int
+        Logging level.
 
     Returns
     -------
-    param_df_with_meta : pandas.DataFrame
-        DataFrame containing metadata and fitted parameters.
+    pd.DataFrame
+        DataFrame containing fitted parameters.
     """
-    df_copy = dataframe.copy()
-    x_data = df_copy.iloc[:, n_meta:].T.index.astype(float)
-    n_samples = df_copy.shape[0]
+    logger.setLevel(log_level)
+    split_df = np.array_split(df_bs_lc, n_jobs)
+    results_obj = []
 
-    # DataFrame to store fitted parameters
-    param_df = pd.DataFrame(columns=["Fm", "Fb", "Sc", "Cs", "As", "mse"])
-
-    # Loop through each amplification curve
-    for i in range(n_samples):
-        y_data = df_copy.iloc[i, n_meta:].T.copy()
-
-        result = opt.dual_annealing(
-            loss_function, bounds=np.array(param_bounds).T, args=(x_data, y_data)
-        )
-        popt = result.x
-
-        mse = np.mean((y_data - sigmoid5_un(x_data, *popt)) ** 2)
-        param_df.loc[i] = [popt[0], popt[1], popt[2], popt[3], popt[4], mse]
-
-    param_df.index = dataframe.index
-    param_df_with_meta = pd.concat([dataframe.iloc[:, :n_meta], param_df], axis=1)
-
-    return param_df_with_meta
+    logger.info(f"Start parallel fitting with {n_jobs} CPU cores...")
+    with multiprocessing.Pool() as pool:
+        for df_ in split_df:
+            results_obj.append(
+                pool.apply_async(fit_curves, (df_, nmeta, initial_params, param_bounds))
+            )
+        pool.close()
+        pool.join()
+    logger.info(f"End parallel fitting!\n")
+    sample_list = [obj.get() for obj in results_obj]
+    return pd.concat(sample_list)
