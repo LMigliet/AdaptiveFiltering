@@ -35,10 +35,10 @@ AdaptiveFiltering/
 │   ├── test_outlier_detector.py # Tests for outlier detector module
 │   └── test_preprocess.py       # Tests for preprocess module
 ├── requirements.txt             # List of dependencies
-├── VERSION                      # Version file
+├── _version.py                  # Version file
 ├── README.md                    # Readme file
 ├── LICENSE                      # License file
-└── main.py                      # Main pipeline script
+└── pipeline.py                  # Main pipeline script
 ```
 
 Install the required packages using:
@@ -47,19 +47,18 @@ pip install -r requirements.txt
 ```
 The current version of this project is stored in the VERSION file.
 
-
 ## Usage
 
 1. **Data Preparation**: Place your raw data files (`AC.txt` format) in a folder and prepare a CSV file containing metadata.
-2. **Configuration**: Update the folder paths and metadata file path in the `main` function.
+2. **Configuration**: Update the folder paths and metadata file path in the `pipeline.py` file.
 3. **Run the Pipeline**: Execute the pipeline to process the data and visualize the results.
 
 ### Example
 
 ```python
 if __name__ == "__main__":
-    folder_path = "path/to/your/raw_data"
-    metadata_path = "path/to/your/metadata.csv"
+    folder_path = "path/to/your/raw_data"  # specify the path of your data
+    metadata_path = "path/to/your/metadata.csv"  # specify the path of your metadata and adjust NMETA if needed.
     inlier_df_ac, outlier_df_ac, NMETA, inlier_params, outlier_params = main(folder_path, metadata_path)
 ```
 
