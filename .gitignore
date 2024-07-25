@@ -163,3 +163,4 @@ cython_debug/
 #.idea/
 
 data/test_data/processed
+data/test_data/plots
