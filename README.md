@@ -15,6 +15,38 @@ It can analyse data from BioMark HD (Fluidigm, now standard biotools) real-time 
 - **Outlier Detection**: Identifies outlier curves using the Isolation Forest algorithm.
 - **Visualization**: Plots amplification curves, highlighting inliers and outliers.
 
+## CODE STRUCTURE
+```
+dPCR_Data_Processing_Pipeline/
+├── data/                        # Folder for storing raw and processed data
+│   ├── raw_data/                # Folder for raw dPCR data files (AC.txt)
+│   └── metadata_test.csv        # Metadata file
+├── src/                         # Source code directory
+│   ├── __init__.py              # Init file for src package
+│   ├── extractor.py             # Module for data extraction
+│   ├── features.py              # Module for feature extraction
+│   ├── fitter.py                # Module for curve fitting
+│   ├── outlier_detector.py      # Module for outlier detection
+│   └── preprocess.py            # Module for data preprocessing
+├── tests/                       # Folder for tests
+│   ├── test_extractor.py        # Tests for extractor module
+│   ├── test_features.py         # Tests for features module
+│   ├── test_fitter.py           # Tests for fitter module
+│   ├── test_outlier_detector.py # Tests for outlier detector module
+│   └── test_preprocess.py       # Tests for preprocess module
+├── requirements.txt             # List of dependencies
+├── VERSION                      # Version file
+├── README.md                    # Readme file
+├── LICENSE                      # License file
+└── main.py                      # Main pipeline script
+```
+
+Install the required packages using:
+```
+pip install -r requirements.txt
+```
+The current version of this project is stored in the VERSION file.
+
 
 ## Usage
 
