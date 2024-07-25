@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 
 
-def plot_amplification_curves(inlier_df_ac, outlier_df_ac, NMETA):
+def plot_amplification_curves_by_panel(
+    inlier_df_ac, outlier_df_ac, NMETA, path_figures
+):
     """
     Plot amplification curves for each panel.
 
@@ -34,4 +36,7 @@ def plot_amplification_curves(inlier_df_ac, outlier_df_ac, NMETA):
         plt.legend()
         plt.ylabel("Fluorescence")
         plt.xlabel("Cycles")
-        plt.show()
+
+        # Save the figure
+        plt.savefig(f"{path_figures}/Panel_{panel_name}.png")
+        plt.close()
