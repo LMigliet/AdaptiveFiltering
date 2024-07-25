@@ -327,12 +327,23 @@ if __name__ == "__main__":
     folder_path = r"data/test_data/raw_data"  # specify the path of your data
     metadata_path = r"data/test_data/metadata_test.csv"  # specify the path of your metadata and adjust NMETA if needed.
     output_folder = r"data/test_data/processed"
+    path_figures = r"data/test_data/plots"
     NMETA = 5
 
+    # Create directories if they do not exist
+    os.makedirs(folder_path, exist_ok=True)
+    os.makedirs(output_folder, exist_ok=True)
+    os.makedirs(path_figures, exist_ok=True)
+
+    # Execute main function
     df_ac_inliers, df_ac_outliers, df_param_inliers, df_param_outliers = main(
         folder_path, metadata_path, output_folder, nmeta=NMETA
     )
 
-    # # PLOT IF YOU WANT
-    # from src.plotter import plot_amplification_curves
-    # plot_amplification_curves(df_ac_inliers, df_ac_outliers, NMETA)
+    # IF YOU WANT TO PLOT
+    from src.plotter import plot_amplification_curves_by_panel
+
+    # Plot amplification curves
+    plot_amplification_curves_by_panel(
+        df_ac_inliers, df_ac_outliers, NMETA, path_figures
+    )
