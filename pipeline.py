@@ -333,6 +333,10 @@ if __name__ == "__main__":
         folder_path, metadata_path, output_folder, nmeta=NMETA
     )
 
-    # # PLOT IF YOU WANT
-    # from src.plotter import plot_amplification_curves
-    # plot_amplification_curves(df_ac_inliers, df_ac_outliers, NMETA)
+    # PLOT IF YOU WANT
+    from src.plotter import plot_amplification_curves_by_panel
+
+    path_figures = r"data/test_data/plots"
+    plot_amplification_curves_by_panel(
+        df_ac_inliers, df_ac_outliers, NMETA, path_figures
+    )
