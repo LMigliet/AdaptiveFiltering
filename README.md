@@ -17,7 +17,7 @@ It can analyse data from BioMark HD (Fluidigm, now standard biotools) real-time 
 
 ## CODE STRUCTURE
 ```
-dPCR_Data_Processing_Pipeline/
+AdaptiveFiltering/
 ├── data/                        # Folder for storing raw and processed data
 │   ├── raw_data/                # Folder for raw dPCR data files (AC.txt)
 │   └── metadata_test.csv        # Metadata file
