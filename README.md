@@ -51,7 +51,7 @@ The current version of this project is stored in the VERSION file.
 ## Usage
 
 1. **Data Preparation**: Place your raw data files (`AC.txt` format) in a folder and prepare a CSV file containing metadata.
-2. **Configuration**: Update the folder paths and metadata file path in the `pipeline.py` file.
+2. **Configuration**: Update the folder paths and metadata file path in the `pipeline.py` file (scroll down to the bottom if you want to test/run).
 3. **Run the Pipeline**: Execute the pipeline to process the data and visualize the results.
 
 ### Example
@@ -59,7 +59,7 @@ The current version of this project is stored in the VERSION file.
 ```python
 if __name__ == "__main__":
     folder_path = "path/to/your/raw_data"  # specify the path of your data
-    metadata_path = "path/to/your/metadata.csv"  # specify the path of your metadata and adjust NMETA if needed.
+    metadata_path = "path/to/your/metadata.csv"  # Specify the path of your metadata and adjust NMETA if needed.
     inlier_df_ac, outlier_df_ac, NMETA, inlier_params, outlier_params = main(folder_path, metadata_path)
 ```
 
