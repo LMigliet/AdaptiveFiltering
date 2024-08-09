@@ -42,6 +42,8 @@ AdaptiveFiltering/
 └── pipeline.py                  # Main pipeline script
 ```
 
+Python version required: 3.11
+
 Install the required packages using:
 ```
 pip install -r requirements.txt
@@ -51,16 +53,27 @@ The current version of this project is stored in the VERSION file.
 ## Usage
 
 1. **Data Preparation**: Place your raw data files (`AC.txt` format) in a folder and prepare a CSV file containing metadata.
-2. **Configuration**: Update the folder paths and metadata file path in the `pipeline.py` file (scroll down to the bottom if you want to test/run).
-3. **Run the Pipeline**: Execute the pipeline to process the data and visualize the results.
+2. **Configuration**: Update the folder and metadata paths in the `main.py` file.
+3. **Run the Pipeline**: Execute in your virtual enviroment (you can also visualize the amplificiation curves).
 
 ### Example
 
 ```python
 if __name__ == "__main__":
-    folder_path = "path/to/your/raw_data"  # specify the path of your data
-    metadata_path = "path/to/your/metadata.csv"  # Specify the path of your metadata and adjust NMETA if needed.
-    inlier_df_ac, outlier_df_ac, NMETA, inlier_params, outlier_params = main(folder_path, metadata_path)
+    # Define directories
+    folder_path = r"data/test_data/raw_data"
+    metadata_path = r"data/test_data/metadata_test.csv"
+    output_folder = r"data/test_data/processed"
+    path_figures = r"data/test_data/plots"
+    NMETA = 5
+
+    # Execute pipeline
+    df_ac_inliers, df_ac_outliers, df_param_inliers, df_param_outliers = run(
+        folder_path,
+        metadata_path,
+        output_folder,
+        nmeta=NMETA,
+    )
 ```
 
 This project is licensed under the MIT License - see the LICENSE file for details.
