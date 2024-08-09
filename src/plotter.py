@@ -2,7 +2,11 @@ import matplotlib.pyplot as plt
 
 
 def plot_amplification_curves_by_panel(
-    inlier_df_ac, outlier_df_ac, NMETA, path_figures
+    inlier_df_ac,
+    outlier_df_ac,
+    NMETA,
+    path_figures,
+    meta=None,
 ):
     """
     Plot amplification curves for each panel.
@@ -21,8 +25,14 @@ def plot_amplification_curves_by_panel(
         x_ac = sample_inlier_df_ac.columns[NMETA:].astype(float).to_numpy()
 
         plt.figure(figsize=(10, 6))
-        plt.title(f"Panel {panel_name}")
         plt.grid(alpha=0.3)
+
+        if meta:
+            plt.title(
+                f"Panel {panel_name} | {meta[0]}: {sample_inlier_df_ac[meta[0]].unique()[0]} | {meta[1]}: {sample_inlier_df_ac[meta[1]].unique()[0]} | {meta[2]}: {sample_inlier_df_ac[meta[2]].unique()[0]}"
+            )
+        else:
+            plt.title(f"Panel {panel_name}")
 
         plt.plot(x_ac, sample_inlier_df_ac.iloc[:, NMETA:].T, color="blue")
         plt.plot(
