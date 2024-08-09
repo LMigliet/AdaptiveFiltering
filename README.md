@@ -1,6 +1,6 @@
 # Adaptive Filtering
 
-Reference: [https://pubs.acs.org/doi/full/10.1021/acs.analchem.2c01883]
+Reference: [ACS article](https://pubs.acs.org/doi/full/10.1021/acs.analchem.2c01883)
 
 This repository contains a comprehensive pipeline for outlier detection of sigmoidal signals. 
 
