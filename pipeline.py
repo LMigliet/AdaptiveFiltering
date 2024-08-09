@@ -206,7 +206,7 @@ def detect_outliers(df_bs_lc, param_df_norm, param_set, outlierpc_series):
     return inlier_index, outlier_index
 
 
-def main(folder_path, metadata_path, output_folder, nmeta=5):
+def run(folder_path, metadata_path, output_folder, nmeta=5):
     """
     Main pipeline for processing dPCR data.
 
@@ -336,14 +336,9 @@ if __name__ == "__main__":
     os.makedirs(path_figures, exist_ok=True)
 
     # Execute main function
-    df_ac_inliers, df_ac_outliers, df_param_inliers, df_param_outliers = main(
-        folder_path, metadata_path, output_folder, nmeta=NMETA
-    )
-
-    # IF YOU WANT TO PLOT
-    from src.plotter import plot_amplification_curves_by_panel
-
-    # Plot amplification curves
-    plot_amplification_curves_by_panel(
-        df_ac_inliers, df_ac_outliers, NMETA, path_figures
+    df_ac_inliers, df_ac_outliers, df_param_inliers, df_param_outliers = run(
+        folder_path,
+        metadata_path,
+        output_folder,
+        nmeta=NMETA,
     )
